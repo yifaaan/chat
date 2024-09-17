@@ -12,6 +12,9 @@ pub enum AppError {
 
     #[error("jwt error: {0}")]
     JwtError(#[from] jwt_simple::Error),
+
+    #[error("http header parse error: {0}")]
+    HttpHeaderError(#[from] axum::http::header::InvalidHeaderValue),
 }
 
 impl IntoResponse for AppError {
@@ -23,6 +26,7 @@ impl IntoResponse for AppError {
             Self::SqlxError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::PasswordHashError(_) => StatusCode::UNPROCESSABLE_ENTITY,
             Self::JwtError(_) => StatusCode::FORBIDDEN,
+            Self::HttpHeaderError(_) => StatusCode::UNPROCESSABLE_ENTITY,
         };
 
         (status, Json(json!({"error": self.to_string()}))).into_response()

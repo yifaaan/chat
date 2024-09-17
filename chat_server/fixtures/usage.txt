@@ -1,2 +1,16 @@
 openssl genpkey -algorithm ed25519 -out encoding.pem
 openssl pkey -in encoding.pem -pubout -out decoding.pem
+
+
+
+
+
+数据库
+sudo -u postgres psql
+
+创建database chat: create database chat
+删除database chat: drop database chat
+
+
+
+在项目根目录执行sqlx migrate run

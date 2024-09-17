@@ -53,9 +53,9 @@ pub async fn get_router(config: AppConfig) -> Result<Router, AppError> {
 impl AppState {
     pub async fn try_new(config: AppConfig) -> Result<Self, AppError> {
         // 加载私钥
-        let ek = EncodingKey::load(&config.auth.sk).context("load ek failed")?;
+        let ek = EncodingKey::load(&config.auth.sk).context("load ek from app.yml failed")?;
         // 加载公钥
-        let dk = DecodingKey::load(&config.auth.pk).context("load dk failed")?;
+        let dk = DecodingKey::load(&config.auth.pk).context("load dk from app.yml failed")?;
         // 连接数据库
         let pool = sqlx::PgPool::connect(&config.server.db_url)
             .await
