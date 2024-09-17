@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
     fullname VARCHAR(64) NOT NULL,
     email VARCHAR(64) NOT NULL,
     -- hashed argon2
-    password VARCHAR(64) NOT NULL,
+    password_hash VARCHAR(64) NOT NULL,
     create_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
