@@ -1,12 +1,13 @@
 mod config;
-
-use std::{ops::Deref, sync::Arc};
+mod handlers;
 
 use axum::{
     routing::{get, patch, post},
     Router,
 };
 pub use config::AppConfig;
+use handlers::*;
+use std::{ops::Deref, sync::Arc};
 
 #[derive(Debug, Clone)]
 pub(crate) struct AppState {
