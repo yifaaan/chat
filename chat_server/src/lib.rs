@@ -4,6 +4,7 @@ mod handlers;
 mod models;
 mod utils;
 
+use anyhow::Context;
 use axum::{
     routing::{get, patch, post},
     Router,
@@ -24,10 +25,11 @@ pub(crate) struct AppStateInner {
     pub(crate) config: AppConfig,
     pub(crate) ek: EncodingKey,
     pub(crate) dk: DecodingKey,
+    pub(crate) pool: sqlx::PgPool,
 }
 
-pub fn get_router(config: AppConfig) -> Router {
-    let state = AppState::new(config);
+pub async fn get_router(config: AppConfig) -> Result<Router, AppError> {
+    let state = AppState::try_new(config).await?;
 
     let api = Router::new()
         .route("/signin", post(signin_handler))
@@ -45,18 +47,28 @@ pub fn get_router(config: AppConfig) -> Router {
         .route("/", get(index_handler))
         .nest("/api", api)
         .with_state(state);
-    app
+    Ok(app)
 }
 
 impl AppState {
-    pub fn new(config: AppConfig) -> Self {
+    pub async fn try_new(config: AppConfig) -> Result<Self, AppError> {
         // 加载私钥
-        let ek = EncodingKey::load(&config.auth.sk).expect("load secret key failed");
+        let ek = EncodingKey::load(&config.auth.sk).context("load ek failed")?;
         // 加载公钥
-        let dk = DecodingKey::load(&config.auth.pk).expect("load public key failed");
-        Self {
-            inner: Arc::new(AppStateInner { config, ek, dk }),
-        }
+        let dk = DecodingKey::load(&config.auth.pk).context("load dk failed")?;
+        // 连接数据库
+        let pool = sqlx::PgPool::connect(&config.server.db_url)
+            .await
+            .context("connected db failed")?;
+
+        Ok(Self {
+            inner: Arc::new(AppStateInner {
+                config,
+                ek,
+                dk,
+                pool,
+            }),
+        })
     }
 }
 
