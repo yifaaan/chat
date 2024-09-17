@@ -1,6 +1,7 @@
+-- Add migration script here
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    fullname VARCHAR(64) NOT NULL
+    fullname VARCHAR(64) NOT NULL,
     email VARCHAR(64) NOT NULL,
     -- hashed argon2
     password VARCHAR(64) NOT NULL,
