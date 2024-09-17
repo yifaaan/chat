@@ -2,6 +2,7 @@ use argon2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
 };
+use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 
 use crate::AppError;
@@ -12,6 +13,19 @@ use super::User;
 struct EmailPass {
     email: String,
     password_hash: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateUser {
+    pub fullname: String,
+    pub email: String,
+    pub password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SigninUser {
+    pub email: String,
+    pub password: String,
 }
 
 impl User {
@@ -25,21 +39,16 @@ impl User {
         Ok(user)
     }
 
-    pub async fn create(
-        email: &str,
-        fullname: &str,
-        password: &str,
-        pool: &sqlx::PgPool,
-    ) -> Result<Self, AppError> {
-        let password_hash = hash_password(password)?;
+    pub async fn create(input: &CreateUser, pool: &sqlx::PgPool) -> Result<Self, AppError> {
+        let password_hash = hash_password(&input.password)?;
 
         let user = sqlx::query_as(
             "INSERT INTO users (email, fullname, password_hash) 
                 VALUES ($1, $2, $3)
                 RETURNING id, fullname, email, created_at",
         )
-        .bind(email)
-        .bind(fullname)
+        .bind(&input.email)
+        .bind(&input.fullname)
         .bind(password_hash)
         .fetch_one(pool)
         .await?;
@@ -47,21 +56,18 @@ impl User {
         Ok(user)
     }
 
-    pub async fn verify(
-        email: &str,
-        password: &str,
-        pool: &sqlx::PgPool,
-    ) -> Result<Option<Self>, AppError> {
+    pub async fn verify(input: &SigninUser, pool: &sqlx::PgPool) -> Result<Option<Self>, AppError> {
         let user: Option<User> = sqlx::query_as(
             "SELECT id, fullname, email, password_hash, created_at FROM users where email = $1",
         )
-        .bind(email)
+        .bind(&input.email)
         .fetch_optional(pool)
         .await?;
         match user {
             Some(mut user) => {
                 let password_hash = std::mem::take(&mut user.password_hash);
-                let is_valid = verify_password(password, &password_hash.unwrap_or_default())?;
+                let is_valid =
+                    verify_password(&input.password, &password_hash.unwrap_or_default())?;
                 if is_valid {
                     Ok(Some(user))
                 } else {

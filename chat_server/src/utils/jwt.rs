@@ -5,7 +5,7 @@ use jwt_simple::prelude::*;
 use crate::{models::User, AppError};
 
 /// 有效期 7 天
-const JWT_DURATION: u32 = 60 * 60 * 24 * 7;
+const JWT_DURATION: u64 = 60 * 60 * 24 * 7;
 
 const JWT_ISSUER: &'static str = "chat_server";
 const JWT_AUDIENCE: &'static str = "chat_web";
@@ -26,7 +26,7 @@ impl EncodingKey {
     pub fn sign(&self, user: User) -> Result<String, AppError> {
         let claims = Claims::with_custom_claims(user, Duration::from_secs(JWT_DURATION));
         let claims = claims.with_issuer(JWT_ISSUER).with_audience(JWT_AUDIENCE);
-        self.0.sign(claims)
+        Ok(self.0.sign(claims)?)
     }
 }
 

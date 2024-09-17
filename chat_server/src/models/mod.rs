@@ -1,4 +1,4 @@
-mod user;
+pub mod user;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
