@@ -2,24 +2,28 @@ mod config;
 mod error;
 mod handlers;
 mod models;
+mod utils;
 
 use axum::{
     routing::{get, patch, post},
     Router,
 };
 pub use config::AppConfig;
+use core::fmt;
 pub use error::AppError;
 use handlers::*;
 use std::{ops::Deref, sync::Arc};
+use utils::{DecodingKey, EncodingKey};
 
 #[derive(Debug, Clone)]
 pub(crate) struct AppState {
     inner: Arc<AppStateInner>,
 }
 
-#[derive(Debug)]
 pub(crate) struct AppStateInner {
     pub(crate) config: AppConfig,
+    pub(crate) ek: EncodingKey,
+    pub(crate) dk: DecodingKey,
 }
 
 pub fn get_router(config: AppConfig) -> Router {
@@ -46,8 +50,12 @@ pub fn get_router(config: AppConfig) -> Router {
 
 impl AppState {
     pub fn new(config: AppConfig) -> Self {
+        // 加载私钥
+        let ek = EncodingKey::load(&config.auth.sk).expect("load secret key failed");
+        // 加载公钥
+        let dk = DecodingKey::load(&config.auth.pk).expect("load public key failed");
         Self {
-            inner: Arc::new(AppStateInner { config }),
+            inner: Arc::new(AppStateInner { config, ek, dk }),
         }
     }
 }
@@ -57,5 +65,13 @@ impl Deref for AppState {
 
     fn deref(&self) -> &Self::Target {
         &self.inner
+    }
+}
+
+impl fmt::Debug for AppStateInner {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AppStateInner")
+            .field("config", &self.config)
+            .finish()
     }
 }

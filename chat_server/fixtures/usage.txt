@@ -1,0 +1,2 @@
+openssl genpkey -algorithm ed25519 -out encoding.pem
+openssl pkey -in encoding.pem -pubout -out decoding.pem
