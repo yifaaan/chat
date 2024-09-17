@@ -1,11 +1,17 @@
-[package]
-name = "chat"
-version = "0.1.0"
-edition = "2021"
+[workspace]
+members = ["chat_server", "notify_server"]
+resolver = "2"
 
-[dependencies]
+
+[workspace.dependencies]
 anyhow = "1.0.89"
-axum = { version = "0.7.5", features = ["http2", "multipart", "query", "tracing"] }
+axum = { version = "0.7.5", features = [
+    "http2",
+    "multipart",
+    "query",
+    "tracing",
+    "macros",
+] }
 serde = { version = "1.0.210", features = ["derive"] }
 serde_yaml = "0.9.34"
 sqlx = { version = "0.8.2", features = ["postgres", "runtime-tokio-rustls"] }
