@@ -15,6 +15,9 @@ pub enum AppError {
 
     #[error("http header parse error: {0}")]
     HttpHeaderError(#[from] axum::http::header::InvalidHeaderValue),
+
+    #[error("email already exists: {0}")]
+    EmailAlreadyExists(String),
 }
 
 impl IntoResponse for AppError {
@@ -27,6 +30,7 @@ impl IntoResponse for AppError {
             Self::PasswordHashError(_) => StatusCode::UNPROCESSABLE_ENTITY,
             Self::JwtError(_) => StatusCode::FORBIDDEN,
             Self::HttpHeaderError(_) => StatusCode::UNPROCESSABLE_ENTITY,
+            Self::EmailAlreadyExists(_) => StatusCode::CONFLICT,
         };
 
         (status, Json(json!({"error": self.to_string()}))).into_response()
