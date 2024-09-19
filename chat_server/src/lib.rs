@@ -1,6 +1,7 @@
 mod config;
 mod error;
 mod handlers;
+mod middlewares;
 mod models;
 mod utils;
 
@@ -13,7 +14,9 @@ pub use config::AppConfig;
 use core::fmt;
 pub use error::AppError;
 use handlers::*;
+use middlewares::set_layer;
 use std::{ops::Deref, sync::Arc};
+
 use utils::{DecodingKey, EncodingKey};
 
 #[derive(Debug, Clone)]
@@ -47,7 +50,7 @@ pub async fn get_router(config: AppConfig) -> Result<Router, AppError> {
         .route("/", get(index_handler))
         .nest("/api", api)
         .with_state(state);
-    Ok(app)
+    Ok(set_layer(app))
 }
 
 impl AppState {
