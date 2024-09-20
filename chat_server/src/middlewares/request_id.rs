@@ -1,7 +1,7 @@
 use axum::{extract::Request, http::HeaderValue, middleware::Next, response::Response};
 use tracing::warn;
 
-const REQUEST_ID_HEADERS: &'static str = "x-request-id";
+use super::REQUEST_ID_HEADERS;
 
 pub async fn set_request_id(mut req: Request, next: Next) -> Response {
     let request_id = uuid::Uuid::now_v7().to_string();

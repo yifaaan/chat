@@ -444,6 +444,7 @@ dependencies = [
  "anyhow",
  "argon2",
  "axum",
+ "axum-extra",
  "chrono",
  "jwt-simple",
  "serde",
